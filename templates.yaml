@@ -1,0 +1,17 @@
+bus_minutes_message: |
+  <speak>
+    The next number {{bus_id}} bus at stop
+    <say-as interpret-as="digits">{{stop_id}}</say-as>
+    <break time="300ms"/>
+    is {{minutes}} minutes away.
+  </speak>
+no_bus_message: There are currently no number {{bus_id}} bus at stop {{stop_id}}.
+
+set_bus_success_message: |
+  <speak>
+    Bus number {{bus_id}} at stop
+    <say-as interpret-as="digits">{{stop_id}}</say-as>
+    is saved.
+  </speak>
+
+internal_error_message: An internal error has occured. Please try again later.

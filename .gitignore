@@ -1,0 +1,4 @@
+*.pyc
+.idea/
+zappa_settings.json
+*/
