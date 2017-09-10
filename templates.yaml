@@ -15,21 +15,22 @@ help: |
   <speak>
     Here are some examples you might like to try.
     <break time="250ms"/>
+
     If you like to check the departure times of a bus at a stop,
     <break time="250ms"/>
-    Check bus 1 at stop
-    <say-as interpret-as="digits">490</say-as>.
+    Check bus 1 at stop <say-as interpret-as="digits">490</say-as>.
     <break time="250ms"/>
+
     For buses you use often, you can save them as presets.
     <break time="250ms"/>
-    Set bus 1 at stop
-    <say-as interpret-as="digits">490</say-as>
-    for preset one.
+    Set bus 1 at stop <say-as interpret-as="digits">490</say-as> for preset one.
     <break time="250ms"/>
+
     And finally, to check buses you've previously saved for a preset,
     <break time="250ms"/>
     get my bus for preset one.
     <break time="250ms"/>
+
     Check your alexa app a list of commands from Austin Transit.
   </speak>
 
@@ -40,7 +41,11 @@ bus_minutes_message: |
     <break time="300ms"/>
     is {{minutes}} minutes away.
   </speak>
-no_bus_message: There are currently no number {{bus_id}} bus at stop {{stop_id}}.
+no_bus_message: |
+  <speak>
+    There are currently no number {{bus_id}} bus at stop
+    <say-as interpret-as="digits">{{stop_id}}</say-as>
+  </speak>
 
 set_bus_success_message: |
   <speak>
