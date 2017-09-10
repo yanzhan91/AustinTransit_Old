@@ -37,8 +37,11 @@ def check_bus(bus_id, stop_id):
     if len(minutes) == 0:
         no_bus_message = render_template('no_bus_message', bus_id=bus_id, stop_id=stop_id)
         return statement(no_bus_message).simple_card('Check Bus Status', remove_html(no_bus_message))
-    minutes_string = ' and '.join(str(x) for x in minutes)
-    bus_minutes_message = render_template('bus_minutes_message', bus_id=bus_id, stop_id=stop_id, minutes=minutes_string)
+    minute_strings = []
+    for minute in minutes:
+        minute_strings.append('%s minutes away <break time="200ms"/>' % minute)
+    minute_string = ' and '.join(minute_strings)
+    bus_minutes_message = render_template('bus_minutes_message', bus_id=bus_id, stop_id=stop_id, minutes=minute_string)
     return statement(bus_minutes_message).simple_card('Check Bus Status', remove_html(bus_minutes_message))
 
 

@@ -39,7 +39,7 @@ bus_minutes_message: |
     The next number {{bus_id}} bus at stop
     <say-as interpret-as="digits">{{stop_id}}</say-as>
     <break time="300ms"/>
-    is {{minutes}} minutes away.
+    is {{minutes}}.
   </speak>
 
 no_bus_message: |

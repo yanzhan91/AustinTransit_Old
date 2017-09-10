@@ -34,8 +34,8 @@ def check_bus(bus_id, stop_id):
         if minutes >= 0:
             minutes_list.append(minutes)
 
-    return minutes_list
+    return sorted(minutes_list)
 
 
 if __name__ == '__main__':
-    print check_bus(3, 491)
+    print check_bus(7, 1174)
