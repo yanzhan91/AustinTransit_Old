@@ -1,6 +1,6 @@
 import logging
 from flask import Flask, render_template
-from flask_ask import Ask, statement, context
+from flask_ask import Ask, statement, question, context
 import uuid
 import CheckBusIntent
 import SetBusIntent
@@ -15,7 +15,12 @@ session_id = uuid.uuid4()
 
 @ask.launch
 def launch():
-    print('Hello')
+    return question(render_template('welcome')).reprompt(render_template('help'))
+
+
+@ask.intent('AMAZON.HelpIntent')
+def help():
+    return question(render_template('help'))
 
 
 @ask.intent('CheckBusIntent', convert={'bus_id': int, 'stop_id': int})
@@ -33,20 +38,20 @@ def check_bus(bus_id, stop_id):
 @ask.intent('SetBusIntent')
 def set_bus(bus_id, stop_id, preset):
     logger.info('session = %s' % session_id)
-    logger.info('%s: Setting Bus %s at %s...' % (session_id, bus_id, stop_id))
+    logger.info('%s: Setting Bus %s at %s for %s...' % (session_id, bus_id, stop_id, preset))
     try:
         SetBusIntent.set_bus(context.System.user.userId, bus_id, stop_id, preset)
     except Exception as e:
         logger.error(e)
         return statement(render_template('internal_error_message'))
     logger.info('%s: Set bus %s at %s was successful' % (session_id, bus_id, stop_id))
-    return statement(render_template('set_bus_success_message', bus_id=bus_id, stop_id=stop_id))
+    return statement(render_template('set_bus_success_message', bus_id=bus_id, stop_id=stop_id, preset=preset))
 
 
 @ask.intent('GetBusIntent')
 def get_bus(preset):
     logger.info('session = %s' % session_id)
-    logger.info('%s: Getting Bus...')
+    logger.info('%s: Getting Bus at %s...' % preset)
     try:
         bus_id, stop_id = GetBusIntent.get_bus(context.System.user.userId, preset)
         logger.info('%s: Bus retrieved was %s at %s' % (session_id, bus_id, stop_id))

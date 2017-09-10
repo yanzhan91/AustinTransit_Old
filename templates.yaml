@@ -1,3 +1,38 @@
+welcome: |
+  <speak>
+    Welcome to Austin Transit. This skill is built to provide you of the real-time transit departures.
+    <break time="250ms"/>
+    If you need more information, please check the alexa app for the Austin Transit skills page.
+    To begin, you can say this as an example.
+    <break time="250ms"/>
+    Check bus 1 at stop
+    <say-as interpret-as="digits">490</say-as>.
+    <break time="250ms"/>
+    For more commands, simply say help.
+  </speak>
+
+help: |
+  <speak>
+    Here are some examples you might like to try.
+    <break time="250ms"/>
+    If you like to check the departure times of a bus at a stop,
+    <break time="250ms"/>
+    Check bus 1 at stop
+    <say-as interpret-as="digits">490</say-as>.
+    <break time="250ms"/>
+    For buses you use often, you can save them as presets.
+    <break time="250ms"/>
+    Set bus 1 at stop
+    <say-as interpret-as="digits">490</say-as>
+    for preset one.
+    <break time="250ms"/>
+    And finally, to check buses you've previously saved for a preset,
+    <break time="250ms"/>
+    get my bus for preset one.
+    <break time="250ms"/>
+    Check your alexa app a list of commands from Austin Transit.
+  </speak>
+
 bus_minutes_message: |
   <speak>
     The next number {{bus_id}} bus at stop
@@ -11,7 +46,7 @@ set_bus_success_message: |
   <speak>
     Bus number {{bus_id}} at stop
     <say-as interpret-as="digits">{{stop_id}}</say-as>
-    is saved.
+    is saved at {{preset}}.
   </speak>
 
 internal_error_message: An internal error has occured. Please try again later.
