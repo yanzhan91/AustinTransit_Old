@@ -41,6 +41,7 @@ bus_minutes_message: |
     <break time="300ms"/>
     is {{minutes}} minutes away.
   </speak>
+
 no_bus_message: |
   <speak>
     There are currently no number {{bus_id}} bus at stop
@@ -61,3 +62,5 @@ get_preset_message: |
   </speak>
 
 internal_error_message: An internal error has occured. Please try again later.
+
+preset_not_found_message: Sorry, {{preset}} has not yet been saved.

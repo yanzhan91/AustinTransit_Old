@@ -66,6 +66,9 @@ def get_bus(preset):
     try:
         bus_id, stop_id = GetBusIntent.get_bus(context.System.user.userId, preset)
         logger.info('%s: Bus retrieved was %s at %s' % (session_id, bus_id, stop_id))
+        if not bus_id or not stop_id:
+            preset_not_found_message = render_template('preset_not_found_message', preset=preset)
+            return statement(preset_not_found_message).simple_card('Get Bus Status', preset_not_found_message)
         return check_bus(bus_id, stop_id)
     except Exception as e:
         logger.error(e)
@@ -82,7 +85,7 @@ def get_preset(preset):
 
 
 def check_preset_syntax(preset):
-    if not preset and not re.compile('preset\\s[0-9]+').match(preset):
+    if not preset or not re.compile('preset\\s[0-9]+').match(preset):
         return 'preset 1'
     elif preset == 'preset to':
         return 'preset 2'
@@ -98,3 +101,7 @@ def remove_html(text, return_char=True):
     else:
         regex = '<[^<]*?>'
     return re.sub(regex, '', text)
+
+
+if __name__ == '__main__':
+    app.run()
