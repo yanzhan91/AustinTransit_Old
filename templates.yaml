@@ -54,4 +54,10 @@ set_bus_success_message: |
     is saved at {{preset}}.
   </speak>
 
+get_preset_message: |
+  <speak>
+    At {{preset}}, you have bus number {{bus_id}} and stop
+    <say-as interpret-as="digits">{{stop_id}}</say-as>
+  </speak>
+
 internal_error_message: An internal error has occured. Please try again later.
