@@ -9,6 +9,7 @@ import GetBusIntent
 
 
 app = Flask(__name__)
+app.config['ASK_VERIFY_REQUESTS'] = False
 ask = Ask(app, '/')
 logger = logging.getLogger()
 session_id = uuid.uuid4()
