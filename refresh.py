@@ -9,12 +9,16 @@ def handler(event, context):
 
     print get_response
 
+    if get_response.status_code != 200:
+        get_response.raise_for_status()
+
     s3 = boto3.client('s3')
     response = s3.upload_fileobj(BytesIO(get_response.content), os.environ['s3_bucket'], os.environ['s3_key'])
     print response
 
+    # return None if successful
     if response:
-        raise Exception()
+        raise Exception('Error while uploading file to s3')
 
     return 'success'
 
