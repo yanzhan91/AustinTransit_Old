@@ -64,3 +64,7 @@ get_preset_message: |
 internal_error_message: An internal error has occured. Please try again later.
 
 preset_not_found_message: Sorry, {{preset}} has not yet been saved.
+
+### Webhook ###
+
+missing_required_values: I did not hear the bus_id or stop_id. Please try again.

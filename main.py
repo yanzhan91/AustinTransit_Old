@@ -1,8 +1,9 @@
 import logging
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from flask_ask import Ask, statement, question, context
 import uuid
 import re
+import json
 import CheckBusIntent
 import SetBusIntent
 import GetBusIntent
@@ -105,6 +106,76 @@ def remove_html(text, return_char=True):
     else:
         regex = '<[^<]*?>'
     return re.sub(regex, '', text)
+
+# WebHook
+
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    print(json.dumps(request.json))
+
+    try:
+        request_json = request.json
+        parameters = request_json['result']['parameters']
+        intent_name = request_json['result']['metadata']['intentName']
+    except Exception as e:
+        logger.error(e)
+        return webhook_error_response()
+
+    if intent_name == 'CheckBusIntent':
+        return webhook_check(parameters)
+    elif intent_name == 'SetBusIntent':
+        return webhook_set(parameters)
+    elif intent_name == 'GetBusIntent':
+        return webhook_get(parameters)
+    else:
+        return webhook_error_response()
+
+
+def webhook_check(parameters):
+    try:
+        bus_id = parameters['bus_id']
+        stop_id = parameters['stop_id']
+    except Exception as e:
+        logger.error(e)
+        return webhook_missing_key_response()
+    return webhook_get_response(check_bus(bus_id, stop_id))
+
+
+def webhook_set(parameters):
+    try:
+        bus_id = parameters['bus_id']
+        stop_id = parameters['stop_id']
+    except Exception as e:
+        logger.error(e)
+        return webhook_missing_key_response
+    preset = parameters['preset']
+    return webhook_get_response(set_bus(bus_id, stop_id, preset))
+
+
+def webhook_get(parameters):
+    preset = parameters['preset']
+    return webhook_get_response(get_bus(preset))
+
+
+def webhook_get_response(response):
+    response_text = response['response']['card']['content']
+    return webhook_format_response(response_text)
+
+
+def webhook_format_response(text):
+    return json.dumps({
+        'speech': text,
+        'displayText': text
+    })
+
+
+def webhook_error_response():
+    return webhook_format_response(render_template('internal_error_message'))
+
+
+def webhook_missing_key_response():
+    return webhook_format_response(render_template('missing_required_values'))
 
 
 if __name__ == '__main__':
