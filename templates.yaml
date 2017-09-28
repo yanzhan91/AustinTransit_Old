@@ -38,6 +38,8 @@ bus_minutes_message: |
   <speak>
     The next number {{bus_id}} bus at stop
     <say-as interpret-as="digits">{{stop_id}}</say-as>
+    <break time="100ms"/>
+    {{stop_name}}
     <break time="300ms"/>
     is {{minutes}}.
   </speak>
@@ -46,12 +48,16 @@ no_bus_message: |
   <speak>
     There are currently no number {{bus_id}} bus at stop
     <say-as interpret-as="digits">{{stop_id}}</say-as>
+    <break time="100ms"/>
+    {{stop_name}}
   </speak>
 
 set_bus_success_message: |
   <speak>
     Bus number {{bus_id}} at stop
     <say-as interpret-as="digits">{{stop_id}}</say-as>
+    <break time="100ms"/>
+    {{stop_name}}
     is saved at {{preset}}.
   </speak>
 
@@ -59,6 +65,8 @@ get_preset_message: |
   <speak>
     At {{preset}}, you have bus number {{bus_id}} and stop
     <say-as interpret-as="digits">{{stop_id}}</say-as>
+    <break time="100ms"/>
+    {{stop_name}}
   </speak>
 
 internal_error_message: An internal error has occured. Please try again later.

@@ -7,6 +7,7 @@ import json
 import CheckBusIntent
 import SetBusIntent
 import GetBusIntent
+import StopNames
 
 
 app = Flask(__name__)
@@ -60,12 +61,14 @@ def check_bus(bus_id, stop_id):
     minutes = CheckBusIntent.check_bus(bus_id, stop_id)
     logging.info('%s: Minutes received: %s' % (session_id, minutes))
     if len(minutes) == 0:
-        return render_template('no_bus_message', bus_id=bus_id, stop_id=stop_id)
+        return render_template('no_bus_message', bus_id=bus_id, stop_id=stop_id,
+                               stop_name=StopNames.get_stop_name(stop_id))
     minute_strings = []
     for minute in minutes:
         minute_strings.append('%s minutes away <break time="200ms"/>' % minute)
     minute_string = ' and '.join(minute_strings)
-    return render_template('bus_minutes_message', bus_id=bus_id, stop_id=stop_id, minutes=minute_string)
+    return render_template('bus_minutes_message', bus_id=bus_id, stop_id=stop_id, minutes=minute_string,
+                           stop_name=StopNames.get_stop_name(stop_id))
 
 
 def set_bus(bus_id, stop_id, preset):
@@ -78,7 +81,8 @@ def set_bus(bus_id, stop_id, preset):
         logger.error(e)
         return render_template('internal_error_message')
     logger.info('%s: Set bus %s at %s was successful' % (session_id, bus_id, stop_id))
-    set_bus_success_message = render_template('set_bus_success_message', bus_id=bus_id, stop_id=stop_id, preset=preset)
+    set_bus_success_message = render_template('set_bus_success_message', bus_id=bus_id, stop_id=stop_id, preset=preset,
+                                              stop_name=StopNames.get_stop_name(stop_id))
     return set_bus_success_message
 
 
@@ -100,7 +104,8 @@ def get_bus(preset):
 def get_preset(preset):
     preset = check_preset_syntax(preset)
     bus_id, stop_id = GetBusIntent.get_bus(context.System.user.userId, preset)
-    return render_template('get_preset_message', preset=preset, bus_id=bus_id, stop_id=stop_id)
+    return render_template('get_preset_message', preset=preset, bus_id=bus_id, stop_id=stop_id,
+                           stop_name=StopNames.get_stop_name(stop_id))
 
 
 def generate_statement_card(speech, title, card):
