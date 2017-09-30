@@ -3,6 +3,8 @@ from boto3.dynamodb.conditions import Key
 
 
 def get_bus(user_id, preset):
+    if not preset:
+        preset = '1'
     user_table = boto3.resource('dynamodb').Table('AustinTransit_Users')
     response = user_table.query(
         KeyConditionExpression=Key('user_id').eq(user_id),
@@ -10,7 +12,7 @@ def get_bus(user_id, preset):
     )
     user = response['Items'][0]
     try:
-        user = user[preset]
+        user = user['preset ' + preset]
     except KeyError:
         return None, None
 
@@ -18,4 +20,4 @@ def get_bus(user_id, preset):
 
 
 if __name__ == '__main__':
-    print get_bus('123', 'preset 1')
+    print get_bus('123', '1')

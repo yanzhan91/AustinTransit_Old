@@ -1,0 +1,47 @@
+{
+  "intents": [
+    {
+      "slots": [
+        {
+          "name": "bus_id",
+          "type": "AMAZON.NUMBER"
+        },
+        {
+          "name": "stop_id",
+          "type": "AMAZON.NUMBER"
+        }
+      ],
+      "intent": "CheckBusIntent"
+    },
+    {
+      "slots": [
+        {
+          "name": "num",
+          "type": "AMAZON.NUMBER"
+        }
+      ],
+      "intent": "SetBusIntent"
+    },
+    {
+      "slots": [
+        {
+          "name": "preset",
+          "type": "AMAZON.NUMBER"
+        }
+      ],
+      "intent": "GetBusIntent"
+    },
+    {
+      "slots": [
+        {
+          "name": "preset",
+          "type": "AMAZON.NUMBER"
+        }
+      ],
+      "intent": "GetPresetIntent"
+    },
+    {
+      "intent": "AMAZON.HelpIntent"
+    }
+  ]
+}

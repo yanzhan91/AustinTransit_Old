@@ -1,0 +1,19 @@
+CheckBusIntent check {bus_id} at {stop_id}
+CheckBusIntent check bus {bus_id} at {stop_id}
+CheckBusIntent check bus {bus_id} at stop {stop_id}
+
+SetBusIntent add bus to preset
+SetBusIntent add preset
+SetBusIntent {num}
+
+GetBusIntent get my bus at {preset}
+GetBusIntent get my bus for {preset}
+GetBusIntent check my bus for {preset}
+GetBusIntent check my bus at {preset}
+GetBusIntent check bus for {preset}
+GetBusIntent check bus at {preset}
+GetBusIntent where's my bus for {preset}
+GetBusIntent where's my bus at {preset}
+GetPresetIntent check {preset}
+
+AMAZON.HelpIntent help

@@ -1,6 +1,6 @@
 import logging
 from flask import Flask, render_template, request
-from flask_ask import Ask, statement, question, context
+from flask_ask import Ask, statement, question, context, session
 import uuid
 import re
 import json
@@ -38,8 +38,23 @@ def check_bus_intent(bus_id, stop_id):
 
 
 @ask.intent('SetBusIntent')
-def set_bus_intent(bus_id, stop_id, preset):
-    set_bus_success_message = set_bus(bus_id, stop_id, preset)
+def set_bus_intent(num):
+    if 'question' not in session.attributes:
+        session.attributes['question'] = 'bus'
+        return question('For which bus id?').reprompt('For a list of bus IDs, say help.')
+    elif session.attributes['question'] == 'bus':
+        session.attributes['question'] = 'stop'
+        session.attributes['bus'] = num
+        return question('And which stop id?').reprompt('For a list of stop IDs, say help.')
+    elif session.attributes['question'] == 'stop':
+        session.attributes['question'] = 'preset'
+        session.attributes['stop'] = num
+        return question('Which preset').reprompt('Which preset would you like to save this in?')
+    elif session.attributes['question'] == 'preset':
+        session.attributes['preset'] = num
+
+    set_bus_success_message = \
+        set_bus(session.attributes['bus'], session.attributes['stop'], 'preset %s' % session.attributes['preset'])
     return generate_statement_card(set_bus_success_message, 'Set Bus Status', remove_html(set_bus_success_message))
 
 
@@ -87,9 +102,9 @@ def set_bus(bus_id, stop_id, preset):
 
 
 def get_bus(preset):
-    preset = check_preset_syntax(preset)
+    # preset = check_preset_syntax(preset)
     logger.info('session = %s' % session_id)
-    logger.info('%s: Getting Bus at %s...' % (session_id, preset))
+    logger.info('%s: Getting Bus at preset %s...' % (session_id, preset))
     try:
         bus_id, stop_id = GetBusIntent.get_bus(context.System.user.userId, preset)
         logger.info('%s: Bus retrieved was %s at %s' % (session_id, bus_id, stop_id))
@@ -102,7 +117,7 @@ def get_bus(preset):
 
 
 def get_preset(preset):
-    preset = check_preset_syntax(preset)
+    # preset = check_preset_syntax(preset)
     bus_id, stop_id = GetBusIntent.get_bus(context.System.user.userId, preset)
     return render_template('get_preset_message', preset=preset, bus_id=bus_id, stop_id=stop_id,
                            stop_name=StopNames.get_stop_name(stop_id))
@@ -112,15 +127,15 @@ def generate_statement_card(speech, title, card):
     return statement(speech).simple_card(title, remove_html(card))
 
 
-def check_preset_syntax(preset):
-    if preset == 'preset to':
-        return 'preset 2'
-    elif preset == 'preset too':
-        return 'preset 2'
-    elif not preset or not re.compile('preset\\s[0-9]+').match(preset):
-        return 'preset 1'
-    else:
-        return preset
+# def check_preset_syntax(preset):
+#     if preset == 'preset to':
+#         return 'preset 2'
+#     elif preset == 'preset too':
+#         return 'preset 2'
+#     elif not preset or not re.compile('preset\\s[0-9]+').match(preset):
+#         return 'preset 1'
+#     else:
+#         return preset
 
 
 def remove_html(text, return_char=True):

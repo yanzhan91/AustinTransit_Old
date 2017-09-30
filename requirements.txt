@@ -3,3 +3,4 @@ Flask-Ask==0.9.7
 gtfs-realtime-bindings==0.0.5
 zappa==0.43.2
 psycopg2==2.7.3
+boto3==1.4.7

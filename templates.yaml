@@ -58,12 +58,12 @@ set_bus_success_message: |
     <say-as interpret-as="digits">{{stop_id}}</say-as>
     <break time="100ms"/>
     {{stop_name}}
-    is saved at {{preset}}.
+    is saved at preset {{preset}}.
   </speak>
 
 get_preset_message: |
   <speak>
-    At {{preset}}, you have bus number {{bus_id}} and stop
+    At preset {{preset}}, you have bus number {{bus_id}} and stop
     <say-as interpret-as="digits">{{stop_id}}</say-as>
     <break time="100ms"/>
     {{stop_name}}
@@ -71,7 +71,7 @@ get_preset_message: |
 
 internal_error_message: An internal error has occured. Please try again later.
 
-preset_not_found_message: Sorry, {{preset}} has not yet been saved.
+preset_not_found_message: Sorry, preset {{preset}} has not yet been saved.
 
 ### Webhook ###
 
