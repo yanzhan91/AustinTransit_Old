@@ -6,14 +6,14 @@ SetBusIntent add bus to preset
 SetBusIntent add preset
 SetBusIntent {num}
 
-GetBusIntent get my bus at {preset}
-GetBusIntent get my bus for {preset}
-GetBusIntent check my bus for {preset}
-GetBusIntent check my bus at {preset}
-GetBusIntent check bus for {preset}
-GetBusIntent check bus at {preset}
-GetBusIntent where's my bus for {preset}
-GetBusIntent where's my bus at {preset}
-GetPresetIntent check {preset}
+GetBusIntent get my bus at preset {preset}
+GetBusIntent get my bus for preset {preset}
+GetBusIntent check my bus for preset {preset}
+GetBusIntent check my bus at preset {preset}
+GetBusIntent check bus for preset {preset}
+GetBusIntent check bus at preset {preset}
+GetBusIntent where's my bus for preset {preset}
+GetBusIntent where's my bus at preset {preset}
+GetPresetIntent check preset {preset}
 
 AMAZON.HelpIntent help

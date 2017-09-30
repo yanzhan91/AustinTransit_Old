@@ -87,7 +87,6 @@ def check_bus(bus_id, stop_id):
 
 
 def set_bus(bus_id, stop_id, preset):
-    preset = check_preset_syntax(preset)
     logger.info('session = %s' % session_id)
     logger.info('%s: Setting Bus %s at %s for %s...' % (session_id, bus_id, stop_id, preset))
     try:
@@ -102,7 +101,6 @@ def set_bus(bus_id, stop_id, preset):
 
 
 def get_bus(preset):
-    # preset = check_preset_syntax(preset)
     logger.info('session = %s' % session_id)
     logger.info('%s: Getting Bus at preset %s...' % (session_id, preset))
     try:
@@ -117,7 +115,6 @@ def get_bus(preset):
 
 
 def get_preset(preset):
-    # preset = check_preset_syntax(preset)
     bus_id, stop_id = GetBusIntent.get_bus(context.System.user.userId, preset)
     return render_template('get_preset_message', preset=preset, bus_id=bus_id, stop_id=stop_id,
                            stop_name=StopNames.get_stop_name(stop_id))
@@ -125,17 +122,6 @@ def get_preset(preset):
 
 def generate_statement_card(speech, title, card):
     return statement(speech).simple_card(title, remove_html(card))
-
-
-# def check_preset_syntax(preset):
-#     if preset == 'preset to':
-#         return 'preset 2'
-#     elif preset == 'preset too':
-#         return 'preset 2'
-#     elif not preset or not re.compile('preset\\s[0-9]+').match(preset):
-#         return 'preset 1'
-#     else:
-#         return preset
 
 
 def remove_html(text, return_char=True):

@@ -1,10 +1,14 @@
 import boto3
 from boto3.dynamodb.conditions import Key
+import re
 
 
 def get_bus(user_id, preset):
-    if not preset:
+    if preset == 'to':
+        preset = '2'
+    elif not preset or not re.compile('\\d+').match(preset):
         preset = '1'
+
     user_table = boto3.resource('dynamodb').Table('AustinTransit_Users')
     response = user_table.query(
         KeyConditionExpression=Key('user_id').eq(user_id),

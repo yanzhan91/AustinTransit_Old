@@ -71,7 +71,7 @@ get_preset_message: |
 
 internal_error_message: An internal error has occured. Please try again later.
 
-preset_not_found_message: Sorry, preset {{preset}} has not yet been saved.
+preset_not_found_message: Preset {{preset}} has not yet been saved.
 
 ### Webhook ###
 
