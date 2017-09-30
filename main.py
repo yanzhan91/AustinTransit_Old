@@ -113,12 +113,12 @@ def generate_statement_card(speech, title, card):
 
 
 def check_preset_syntax(preset):
-    if not preset or not re.compile('preset\\s[0-9]+').match(preset):
-        return 'preset 1'
-    elif preset == 'preset to':
+    if preset == 'preset to':
         return 'preset 2'
     elif preset == 'preset too':
         return 'preset 2'
+    elif not preset or not re.compile('preset\\s[0-9]+').match(preset):
+        return 'preset 1'
     else:
         return preset
 
