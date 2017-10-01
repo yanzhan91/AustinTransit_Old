@@ -16,7 +16,15 @@
     {
       "slots": [
         {
-          "name": "num",
+          "name": "bus_id",
+          "type": "AMAZON.NUMBER"
+        },
+        {
+          "name": "stop_id",
+          "type": "AMAZON.NUMBER"
+        },
+        {
+          "name": "preset_id",
           "type": "AMAZON.NUMBER"
         }
       ],
@@ -25,7 +33,7 @@
     {
       "slots": [
         {
-          "name": "preset",
+          "name": "preset_id",
           "type": "AMAZON.NUMBER"
         }
       ],
@@ -34,14 +42,11 @@
     {
       "slots": [
         {
-          "name": "preset",
+          "name": "num",
           "type": "AMAZON.NUMBER"
         }
       ],
-      "intent": "GetPresetIntent"
-    },
-    {
-      "intent": "AMAZON.HelpIntent"
+      "intent": "AnswerIntent"
     }
   ]
 }

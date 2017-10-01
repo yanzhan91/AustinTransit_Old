@@ -10,7 +10,7 @@ def set_bus(user_id, bus_id, stop_id, preset):
         },
         UpdateExpression=update_exp,
         ExpressionAttributeNames={
-            '#p': preset
+            '#p': 'preset %s' % preset
         },
         ExpressionAttributeValues={
             ':b': {'bus_id': bus_id, 'stop_id': stop_id}

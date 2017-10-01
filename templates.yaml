@@ -73,6 +73,20 @@ internal_error_message: An internal error has occured. Please try again later.
 
 preset_not_found_message: Preset {{preset}} has not yet been saved.
 
+bus-question: For which bus?
+
+bus-question-reprompt: For a list of bus IDs, say help.
+
+stop-question: Which stop?
+
+stop-question-reprompt: For a list of stop IDs, say help.
+
+preset-question: Which preset?
+
+preset-question-reprompt: Which preset would you like?
+
 ### Webhook ###
 
 missing_required_values: I did not hear the bus_id or stop_id. Please try again.
+
+

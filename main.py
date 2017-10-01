@@ -1,9 +1,7 @@
 import logging
-from flask import Flask, render_template, request
+from flask import Flask, render_template
 from flask_ask import Ask, statement, question, context, session
-import uuid
 import re
-import json
 import CheckBusIntent
 import SetBusIntent
 import GetBusIntent
@@ -14,67 +12,119 @@ app = Flask(__name__)
 app.config['ASK_VERIFY_REQUESTS'] = False
 ask = Ask(app, '/')
 logger = logging.getLogger()
-session_id = uuid.uuid4()
 
 
-@ask.launch
-def launch():
-    welcome_text = render_template('welcome')
-    return question(welcome_text)\
-        .simple_card('Welcome to AustinTransit', remove_html(welcome_text))\
-        .reprompt(render_template('help'))
+# @ask.launch
+# def launch():
+#     welcome_text = render_template('welcome')
+#     return question(welcome_text)\
+#         .simple_card('Welcome to AustinTransit', remove_html(welcome_text))\
+#         .reprompt(render_template('help'))
+#
+#
+# @ask.intent('AMAZON.HelpIntent')
+# def help():
+#     help_text = render_template('help')
+#     return question(help_text).simple_card('AustinTransit Help', remove_html(help_text, False))
 
 
-@ask.intent('AMAZON.HelpIntent')
-def help():
-    help_text = render_template('help')
-    return question(help_text).simple_card('AustinTransit Help', remove_html(help_text, False))
-
-
-@ask.intent('CheckBusIntent', convert={'bus_id': int, 'stop_id': int})
+@ask.intent('CheckBusIntent')
 def check_bus_intent(bus_id, stop_id):
-    bus_minutes_message = check_bus(bus_id, stop_id)
-    return generate_statement_card(bus_minutes_message, 'Check Bus Status', remove_html(bus_minutes_message))
+    session.attributes['request'] = 'check_bus'
+
+    result = analyze_id(bus_id, 'bus')
+    if result:
+        session.attributes['current_param'] = 0
+        return result
+    result = analyze_id(stop_id, 'stop')
+    if result:
+        session.attributes['current_param'] = 1
+        return result
+
+    bus_minutes_message = check_bus(session.attributes['bus'], session.attributes['stop'])
+    return generate_statement_card(bus_minutes_message, 'Check Bus Status')
 
 
 @ask.intent('SetBusIntent')
-def set_bus_intent(num):
-    if 'question' not in session.attributes:
-        session.attributes['question'] = 'bus'
-        return question('For which bus id?').reprompt('For a list of bus IDs, say help.')
-    elif session.attributes['question'] == 'bus':
-        session.attributes['question'] = 'stop'
-        session.attributes['bus'] = num
-        return question('And which stop id?').reprompt('For a list of stop IDs, say help.')
-    elif session.attributes['question'] == 'stop':
-        session.attributes['question'] = 'preset'
-        session.attributes['stop'] = num
-        return question('Which preset').reprompt('Which preset would you like to save this in?')
-    elif session.attributes['question'] == 'preset':
-        session.attributes['preset'] = num
+def set_bus_intent(bus_id, stop_id, preset_id):
+    session.attributes['request'] = 'set_bus'
+
+    if not preset_id:
+        preset_id = '1'
+
+    result = analyze_id(bus_id, 'bus')
+    if result:
+        session.attributes['current_param'] = 0
+        return result
+    result = analyze_id(stop_id, 'stop')
+    if result:
+        session.attributes['current_param'] = 1
+        return result
+    result = analyze_id(preset_id, 'preset')
+    if result:
+        session.attributes['current_param'] = 2
+        return result
 
     set_bus_success_message = \
-        set_bus(session.attributes['bus'], session.attributes['stop'], 'preset %s' % session.attributes['preset'])
-    return generate_statement_card(set_bus_success_message, 'Set Bus Status', remove_html(set_bus_success_message))
+        set_bus(session.attributes['bus'], session.attributes['stop'], session.attributes['preset'])
+    return generate_statement_card(set_bus_success_message, 'Set Bus Status')
 
 
 @ask.intent('GetBusIntent')
-def get_bus_intent(preset):
-    get_bus_message = get_bus(preset)
-    return generate_statement_card(get_bus_message, 'Get Bus Status', get_bus_message)
+def get_bus_intent(preset_id):
+    session.attributes['request'] = 'get_bus'
+
+    if not preset_id:
+        preset_id = '1'
+
+    result = analyze_id(preset_id, 'preset')
+    if result:
+        session.attributes['current_param'] = 0
+        return result
+
+    get_bus_message = get_bus(session.attributes['preset'])
+    print(get_bus_message)
+    return generate_statement_card(get_bus_message, 'Get Bus Status')
 
 
-@ask.intent('GetPresetIntent')
-def get_preset_intent(preset):
-    get_preset_message = get_bus(preset)
-    return generate_statement_card(get_preset_message, preset.title(), remove_html(get_preset_message))
+@ask.intent('AnswerIntent')
+def answer_intent(num):
+    logger.info(session.attributes)
+    logger.info(num)
+    current_param = session.attributes['current_param']
+    if session.attributes['request'] == 'check_bus':
+        return check_bus_intent(assign_params(current_param, 0, num), assign_params(current_param, 1, num))
+    elif session.attributes['request'] == 'set_bus':
+        return set_bus_intent(
+            assign_params(current_param, 0, num),
+            assign_params(current_param, 1, num),
+            assign_params(current_param, 2, num))
+    elif session.attributes['request'] == 'get_bus':
+        return get_bus_intent(assign_params(current_param, 0, num))
+
+
+def assign_params(current_param, param_num, num):
+    return num if current_param == param_num else None
+
+
+def analyze_id(num, num_type):
+    print(type(num))
+    if num_type in session.attributes:
+        return None
+    if not num or not re.compile('\\d+').match(str(num)):
+        print('num=%s' % num)
+        return question(render_template('%s-question' % num_type))\
+            .reprompt(render_template('%s-question-reprompt' % num_type))
+    else:
+        print('success')
+        session.attributes[num_type] = num
+        return None
 
 
 def check_bus(bus_id, stop_id):
-    logger.info('session = %s' % session_id)
-    logger.info('%s: Checking Bus %s at %s...' % (session_id, bus_id, stop_id))
+    logger.info('Checking Bus %s at %s...' % (bus_id, stop_id))
     minutes = CheckBusIntent.check_bus(bus_id, stop_id)
-    logging.info('%s: Minutes received: %s' % (session_id, minutes))
+    logging.info('Minutes received: %s' % minutes)
     if len(minutes) == 0:
         return render_template('no_bus_message', bus_id=bus_id, stop_id=stop_id,
                                stop_name=StopNames.get_stop_name(stop_id))
@@ -87,25 +137,23 @@ def check_bus(bus_id, stop_id):
 
 
 def set_bus(bus_id, stop_id, preset):
-    logger.info('session = %s' % session_id)
-    logger.info('%s: Setting Bus %s at %s for %s...' % (session_id, bus_id, stop_id, preset))
+    logger.info('Setting Bus %s at %s for preset %s...' % (bus_id, stop_id, preset))
     try:
         SetBusIntent.set_bus(context.System.user.userId, bus_id, stop_id, preset)
     except Exception as e:
         logger.error(e)
         return render_template('internal_error_message')
-    logger.info('%s: Set bus %s at %s was successful' % (session_id, bus_id, stop_id))
+    logger.info('Set bus %s at %s was successful' % (bus_id, stop_id))
     set_bus_success_message = render_template('set_bus_success_message', bus_id=bus_id, stop_id=stop_id, preset=preset,
                                               stop_name=StopNames.get_stop_name(stop_id))
     return set_bus_success_message
 
 
 def get_bus(preset):
-    logger.info('session = %s' % session_id)
-    logger.info('%s: Getting Bus at preset %s...' % (session_id, preset))
+    logger.info('Getting Bus at preset %s...' % preset)
     try:
         bus_id, stop_id = GetBusIntent.get_bus(context.System.user.userId, preset)
-        logger.info('%s: Bus retrieved was %s at %s' % (session_id, bus_id, stop_id))
+        logger.info('Bus retrieved was %s at %s' % (bus_id, stop_id))
         if not bus_id or not stop_id:
             return render_template('preset_not_found_message', preset=preset)
         return check_bus(bus_id, stop_id)
@@ -120,86 +168,12 @@ def get_preset(preset):
                            stop_name=StopNames.get_stop_name(stop_id))
 
 
-def generate_statement_card(speech, title, card):
-    return statement(speech).simple_card(title, remove_html(card))
+def generate_statement_card(speech, title):
+    return statement(speech).simple_card(title, remove_html(speech))
 
 
-def remove_html(text, return_char=True):
-    if return_char:
-        regex = '<[^<]*?>|\\n'
-    else:
-        regex = '<[^<]*?>'
-    return re.sub(regex, '', text)
-
-# WebHook
-
-
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    print(json.dumps(request.json))
-
-    try:
-        request_json = request.json
-        parameters = request_json['result']['parameters']
-        intent_name = request_json['result']['metadata']['intentName']
-    except Exception as e:
-        logger.error(e)
-        return webhook_error_response()
-
-    if intent_name == 'CheckBusIntent':
-        return webhook_check(parameters)
-    elif intent_name == 'SetBusIntent':
-        return webhook_set(parameters)
-    elif intent_name == 'GetBusIntent':
-        return webhook_get(parameters)
-    else:
-        return webhook_error_response()
-
-
-def webhook_check(parameters):
-    try:
-        bus_id = parameters['bus_id']
-        stop_id = parameters['stop_id']
-    except Exception as e:
-        logger.error(e)
-        return webhook_missing_key_response()
-    return webhook_get_response(check_bus(bus_id, stop_id))
-
-
-def webhook_set(parameters):
-    try:
-        bus_id = parameters['bus_id']
-        stop_id = parameters['stop_id']
-    except Exception as e:
-        logger.error(e)
-        return webhook_missing_key_response
-    preset = parameters['preset']
-    return webhook_get_response(set_bus(bus_id, stop_id, preset))
-
-
-def webhook_get(parameters):
-    preset = parameters['preset']
-    return webhook_get_response(get_bus(preset))
-
-
-def webhook_get_response(response):
-    response_text = remove_html(response, True)
-    return webhook_format_response(response_text)
-
-
-def webhook_format_response(text):
-    return json.dumps({
-        'speech': text,
-        'displayText': text
-    })
-
-
-def webhook_error_response():
-    return webhook_format_response(render_template('internal_error_message'))
-
-
-def webhook_missing_key_response():
-    return webhook_format_response(render_template('missing_required_values'))
+def remove_html(text):
+    return re.sub('<[^<]*?>', '', text)
 
 
 if __name__ == '__main__':
