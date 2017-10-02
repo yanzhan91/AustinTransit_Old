@@ -14,18 +14,17 @@ ask = Ask(app, '/')
 logger = logging.getLogger()
 
 
-# @ask.launch
-# def launch():
-#     welcome_text = render_template('welcome')
-#     return question(welcome_text)\
-#         .simple_card('Welcome to AustinTransit', remove_html(welcome_text))\
-#         .reprompt(render_template('help'))
-#
-#
-# @ask.intent('AMAZON.HelpIntent')
-# def help():
-#     help_text = render_template('help')
-#     return question(help_text).simple_card('AustinTransit Help', remove_html(help_text, False))
+@ask.launch
+def launch():
+    welcome_text = render_template('welcome')
+    return question(welcome_text)\
+        .simple_card('Welcome to AustinTransit', remove_html(welcome_text))\
+        .reprompt(render_template('help'))
+
+
+@ask.intent('AMAZON.HelpIntent')
+def help():
+    return question(render_template('help')).simple_card('AustinTransit Help', render_template('help_card'))
 
 
 @ask.intent('CheckBusIntent')
@@ -48,9 +47,6 @@ def check_bus_intent(bus_id, stop_id):
 @ask.intent('SetBusIntent')
 def set_bus_intent(bus_id, stop_id, preset_id):
     session.attributes['request'] = 'set_bus'
-
-    if not preset_id:
-        preset_id = '1'
 
     result = analyze_id(bus_id, 'bus')
     if result:
@@ -108,15 +104,12 @@ def assign_params(current_param, param_num, num):
 
 
 def analyze_id(num, num_type):
-    print(type(num))
     if num_type in session.attributes:
         return None
     if not num or not re.compile('\\d+').match(str(num)):
-        print('num=%s' % num)
         return question(render_template('%s-question' % num_type))\
             .reprompt(render_template('%s-question-reprompt' % num_type))
     else:
-        print('success')
         session.attributes[num_type] = num
         return None
 
