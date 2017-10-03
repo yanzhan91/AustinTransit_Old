@@ -47,6 +47,12 @@
         }
       ],
       "intent": "AnswerIntent"
+    },
+    {
+      "intent": "AMAZON.HelpIntent"
+    },
+    {
+      "intent": "AMAZON.StopIntent"
     }
   ]
 }

@@ -27,6 +27,11 @@ def help():
     return question(render_template('help')).simple_card('AustinTransit Help', render_template('help_card'))
 
 
+@ask.intent('AMAZON.StopIntent')
+def stop():
+    return statement('ok')
+
+
 @ask.intent('CheckBusIntent')
 def check_bus_intent(bus_id, stop_id):
     session.attributes['request'] = 'check_bus'
@@ -85,8 +90,8 @@ def get_bus_intent(preset_id):
 
 @ask.intent('AnswerIntent')
 def answer_intent(num):
-    logger.info(session.attributes)
-    logger.info(num)
+    if 'request' not in session.attributes:
+        return question(render_template('try_again_message')).reprompt(render_template('try_again_message'))
     current_param = session.attributes['current_param']
     if session.attributes['request'] == 'check_bus':
         return check_bus_intent(assign_params(current_param, 0, num), assign_params(current_param, 1, num))
@@ -97,6 +102,8 @@ def answer_intent(num):
             assign_params(current_param, 2, num))
     elif session.attributes['request'] == 'get_bus':
         return get_bus_intent(assign_params(current_param, 0, num))
+    else:
+        return question(render_template('try_again_message')).reprompt(render_template('try_again_message'))
 
 
 def assign_params(current_param, param_num, num):
@@ -166,7 +173,7 @@ def generate_statement_card(speech, title):
 
 
 def remove_html(text):
-    return re.sub('<[^<]*?>', '', text)
+    return re.sub('<[^<]*?>|\\n', '', text)
 
 
 if __name__ == '__main__':

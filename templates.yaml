@@ -11,13 +11,12 @@ welcome: |
     For more commands, simply say help.
   </speak>
 
-help: |
-  I have sent a list of available commands for you in your alexa app.
+help: I have sent a list of available commands for you in your alexa app.
 
 help_card: |
   Here are some examples you might like to try:
   "Check bus 1 at stop 490"
-  "Set bus 1 at stop for preset 1"
+  "Add bus to preset"
   "Get my bus for preset 1"
   For a list of bus IDs and stop IDs
   https://www.capmetro.org/stopdetail/index.php?stop=0
@@ -56,6 +55,8 @@ get_preset_message: |
     <break time="100ms"/>
     {{stop_name}}
   </speak>
+
+try_again_message: I didn't get that. Please say that again.
 
 internal_error_message: An internal error has occured. Please try again later.
 
