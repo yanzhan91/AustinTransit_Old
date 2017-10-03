@@ -6,6 +6,7 @@ import CheckBusIntent
 import SetBusIntent
 import GetBusIntent
 import StopNames
+import random
 
 
 app = Flask(__name__)
@@ -132,8 +133,12 @@ def check_bus(bus_id, stop_id):
     for minute in minutes:
         minute_strings.append('%s minutes away <break time="200ms"/>' % minute)
     minute_string = ' and '.join(minute_strings)
-    return render_template('bus_minutes_message', bus_id=bus_id, stop_id=stop_id, minutes=minute_string,
-                           stop_name=StopNames.get_stop_name(stop_id))
+
+    adjectives = ['adorable', 'gorgeous', 'beautiful', 'amazing', 'incredible', 'talented', 'elegant', 'clever',
+                  'charming', 'dazzling', 'fabulous', 'graceful', 'lovely', 'intelligent', 'perfect', 'wonderful']
+
+    return render_template('bus_minutes_message', adjective=random.choice(adjectives), bus_id=bus_id, stop_id=stop_id,
+                           minutes=minute_string, stop_name=StopNames.get_stop_name(stop_id))
 
 
 def set_bus(bus_id, stop_id, preset):

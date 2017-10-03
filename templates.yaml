@@ -23,6 +23,8 @@ help_card: |
 
 bus_minutes_message: |
   <speak>
+    My {{adjective}} boo boo
+    <break time="500ms"/>
     The next number {{bus_id}} bus at stop
     <say-as interpret-as="digits">{{stop_id}}</say-as>
     <break time="100ms"/>
