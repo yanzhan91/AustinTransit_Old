@@ -10,7 +10,7 @@ def get_bus(user_id, preset):
     )
     user = response['Items'][0]
     try:
-        user = user[preset]
+        user = user['preset ' + preset]
     except KeyError:
         return None, None
 
@@ -18,4 +18,4 @@ def get_bus(user_id, preset):
 
 
 if __name__ == '__main__':
-    print get_bus('123', 'preset 1')
+    print get_bus('123', '1')
