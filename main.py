@@ -91,7 +91,8 @@ def get_bus_intent(preset_id):
 @ask.intent('AnswerIntent')
 def answer_intent(num):
     if 'request' not in session.attributes:
-        return question(render_template('try_again_message')).reprompt(render_template('try_again_message'))
+        # return question(render_template('try_again_message')).reprompt(render_template('try_again_message'))
+        return get_bus_intent('1')
     current_param = session.attributes['current_param']
     if session.attributes['request'] == 'check_bus':
         return check_bus_intent(assign_params(current_param, 0, num), assign_params(current_param, 1, num))
