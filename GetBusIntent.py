@@ -8,10 +8,11 @@ def get_bus(user_id, preset):
         KeyConditionExpression=Key('user_id').eq(user_id),
         Limit=1
     )
-    user = response['Items'][0]
+
     try:
+        user = response['Items'][0]
         user = user['preset ' + preset]
-    except KeyError:
+    except (KeyError, IndexError):
         return None, None
 
     return user['bus_id'], user['stop_id']
