@@ -90,6 +90,9 @@ def get_bus_intent(preset_id):
 
 @ask.intent('AnswerIntent')
 def answer_intent(num):
+    if check_iteration():
+        return statement(render_template('try_again_message'))
+
     if 'request' not in session.attributes:
         # return question(render_template('try_again_message')).reprompt(render_template('try_again_message'))
         return get_bus_intent('1')
@@ -175,6 +178,15 @@ def generate_statement_card(speech, title):
 
 def remove_html(text):
     return re.sub('<[^<]*?>|\\n', '', text)
+
+
+def check_iteration():
+    if 'iter' not in session.attributes:
+        session.attributes['iter'] = 1
+        return False
+    if session.attributes['iter'] > 2:
+        return True
+    session.attributes['iter'] += 1
 
 
 if __name__ == '__main__':
