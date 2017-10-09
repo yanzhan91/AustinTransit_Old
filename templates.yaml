@@ -18,8 +18,7 @@ help_card: |
   "Check bus 1 at stop 490"
   "Add bus to preset"
   "Get my bus for preset 1"
-  For a list of bus IDs and stop IDs, check out
-  https://www.capmetro.org/stopdetail/index.php?stop=0
+  For a list of bus IDs and stop IDs, check out the Capital Metro website at www.capmetro.org
 
 bus_minutes_message: |
   <speak>
