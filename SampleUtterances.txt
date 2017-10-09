@@ -13,6 +13,7 @@ SetBusIntent set bus
 SetBusIntent set preset
 SetBusIntent set bus to preset
 
+GetBusIntent get my bus
 GetBusIntent get my bus at preset {preset_id}
 GetBusIntent get my bus for preset {preset_id}
 GetBusIntent get my bus for preset {preset_id}
