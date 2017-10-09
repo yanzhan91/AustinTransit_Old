@@ -6,12 +6,15 @@ import CheckBusIntent
 import SetBusIntent
 import GetBusIntent
 import StopNames
+import random
 
 
 app = Flask(__name__)
 app.config['ASK_VERIFY_REQUESTS'] = False
 ask = Ask(app, '/')
 logger = logging.getLogger()
+adjectives = ['adorable', 'gorgeous', 'beautiful', 'amazing', 'incredible', 'talented', 'elegant', 'clever',
+              'charming', 'dazzling', 'fabulous', 'graceful', 'lovely', 'intelligent', 'perfect', 'wonderful']
 
 
 @ask.launch
@@ -136,8 +139,18 @@ def check_bus(bus_id, stop_id):
     for minute in minutes:
         minute_strings.append('%s minutes away <break time="200ms"/>' % minute)
     minute_string = ' and '.join(minute_strings)
-    return render_template('bus_minutes_message', bus_id=bus_id, stop_id=stop_id, minutes=minute_string,
-                           stop_name=StopNames.get_stop_name(stop_id))
+
+    claire = ''
+    if context.System.user.userId == 'amzn1.ask.account.AG45VG6TQYHOLHETZSHBHS4SGKSM2AGOCDGJYUS4JZ6H76VXODFLP5Z' \
+                                     'F2FGHEPJJJ5DKWUPXZCJD2OIDSWXKEPP7SZAAP5U774DDBGEL7WJOKDDTUKFAGGEGQ6X7F44I' \
+                                     'X6PZMIAEKRJ2VQJHFYY5UFRWLSETZUMBBXB7W7YTAARPUSJTAMTK3KX2Q7VZYP7FF4YB2JYRU' \
+                                     'IYJIGI':
+        claire = 'My %s boo boo.' % (random.choice(adjectives))
+
+    response = render_template('bus_minutes_message', claire=claire, bus_id=bus_id, stop_id=stop_id,
+                               minutes=minute_string, stop_name=StopNames.get_stop_name(stop_id))
+
+    return response
 
 
 def set_bus(bus_id, stop_id, preset):

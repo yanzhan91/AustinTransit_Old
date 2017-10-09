@@ -23,6 +23,7 @@ help_card: |
 
 bus_minutes_message: |
   <speak>
+    {{claire}}
     The next number {{bus_id}} bus at stop
     <say-as interpret-as="digits">{{stop_id}}</say-as>
     <break time="100ms"/>
