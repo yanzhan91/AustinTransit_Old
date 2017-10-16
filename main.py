@@ -27,7 +27,7 @@ def launch():
 
 @ask.intent('AMAZON.HelpIntent')
 def help():
-    return statement(render_template('help')).simple_card('AustinTransit Help', render_template('help_card'))
+    return question(render_template('help')).simple_card('AustinTransit Help', render_template('help_card'))
 
 
 @ask.intent('AMAZON.StopIntent')
