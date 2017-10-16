@@ -11,7 +11,11 @@ welcome: |
     For more commands, simply say help.
   </speak>
 
-help: I have sent a list of available commands for you in your alexa app. As an example, you can say, check bus 1 at stop 490.
+help: |
+  <speak>
+    I have sent a list of available commands for you in your alexa app. As an example, you can say, check bus 1 at stop
+    <say-as interpret-as="digits">490</say-as>.
+  </speak>
 
 help_card: |
   Here are some examples you might like to try:
@@ -46,14 +50,6 @@ set_bus_success_message: |
     <break time="100ms"/>
     {{stop_name}}
     is saved at preset {{preset}}.
-  </speak>
-
-get_preset_message: |
-  <speak>
-    At preset {{preset}}, you have bus number {{bus_id}} and stop
-    <say-as interpret-as="digits">{{stop_id}}</say-as>
-    <break time="100ms"/>
-    {{stop_name}}
   </speak>
 
 try_again_message: I didn't get that. Please say that again.

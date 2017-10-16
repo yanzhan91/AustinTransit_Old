@@ -97,8 +97,7 @@ def answer_intent(num):
         return statement(render_template('try_again_message'))
 
     if 'request' not in session.attributes:
-        # return question(render_template('try_again_message')).reprompt(render_template('try_again_message'))
-        return get_bus_intent('1')
+       return get_bus_intent('1')
     current_param = session.attributes['current_param']
     if session.attributes['request'] == 'check_bus':
         return check_bus_intent(assign_params(current_param, 0, num), assign_params(current_param, 1, num))
@@ -177,12 +176,6 @@ def get_bus(preset):
     except Exception as e:
         logger.error(e)
         return render_template('internal_error_message')
-
-
-def get_preset(preset):
-    bus_id, stop_id = GetBusIntent.get_bus(context.System.user.userId, preset)
-    return render_template('get_preset_message', preset=preset, bus_id=bus_id, stop_id=stop_id,
-                           stop_name=StopNames.get_stop_name(stop_id))
 
 
 def generate_statement_card(speech, title):

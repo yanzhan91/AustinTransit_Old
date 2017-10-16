@@ -17,6 +17,5 @@ def get_bus(user_id, preset):
 
     return user['bus_id'], user['stop_id']
 
-
 if __name__ == '__main__':
     print get_bus('123', '1')
