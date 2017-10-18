@@ -6,7 +6,7 @@ from boto3.dynamodb.conditions import Key
 def get_stop_name(stop_id):
     logging.info('Geting stop name for %s' % stop_id)
     try:
-        user_table = boto3.resource('dynamodb').Table('TransitBuddy_Stops')
+        user_table = boto3.resource('dynamodb').Table('AustinTransit_Stops')
         response = user_table.query(
             KeyConditionExpression=Key('stop_id').eq(int(stop_id)),
             Limit=1
@@ -18,4 +18,4 @@ def get_stop_name(stop_id):
 
 
 if __name__ == "__main__":
-    print(get_stop_name('1176'))
+    print(get_stop_name('1174'))
