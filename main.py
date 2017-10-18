@@ -10,7 +10,6 @@ import random
 
 
 app = Flask(__name__)
-app.config['ASK_VERIFY_REQUESTS'] = False
 ask = Ask(app, '/')
 logger = logging.getLogger()
 adjectives = ['adorable', 'gorgeous', 'beautiful', 'amazing', 'incredible', 'talented', 'elegant', 'clever',
@@ -196,4 +195,5 @@ def check_iteration():
 
 
 if __name__ == '__main__':
+    app.config['ASK_VERIFY_REQUESTS'] = False
     app.run()
