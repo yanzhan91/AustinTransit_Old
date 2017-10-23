@@ -2,18 +2,14 @@ import logging
 from flask import Flask, render_template
 from flask_ask import Ask, statement, question, context, session
 import re
-import CheckBusIntent
-import SetBusIntent
-import GetBusIntent
-import StopNames
-import random
+import CheckIntent
+import SetIntent
+import GetIntent
 
 
 app = Flask(__name__)
 ask = Ask(app, '/')
 logger = logging.getLogger()
-adjectives = ['adorable', 'gorgeous', 'beautiful', 'amazing', 'incredible', 'talented', 'elegant', 'clever',
-              'charming', 'dazzling', 'fabulous', 'graceful', 'lovely', 'intelligent', 'perfect', 'wonderful']
 
 
 @ask.launch
@@ -25,156 +21,150 @@ def launch():
 
 
 @ask.intent('AMAZON.HelpIntent')
-def help():
+def help_intent():
     return question(render_template('help')).simple_card('AustinTransit Help', render_template('help_card'))
 
 
 @ask.intent('AMAZON.StopIntent')
-def stop():
+def stop_intent():
     return statement('ok')
 
 
-@ask.intent('CheckBusIntent')
-def check_bus_intent(bus_id, stop_id):
-    session.attributes['request'] = 'check_bus'
+@ask.intent('CheckIntent')
+def check_intent(route, stop, agency):
+    session.attributes['request'] = 'check'
 
-    result = analyze_id(bus_id, 'bus')
+    result = analyze_id(route, 'route')
     if result:
         session.attributes['current_param'] = 0
         return result
-    result = analyze_id(stop_id, 'stop')
+    result = analyze_id(stop, 'stop')
     if result:
         session.attributes['current_param'] = 1
         return result
-
-    bus_minutes_message = check_bus(session.attributes['bus'], session.attributes['stop'])
-    return generate_statement_card(bus_minutes_message, 'Check Bus Status')
-
-
-@ask.intent('SetBusIntent')
-def set_bus_intent(bus_id, stop_id, preset_id):
-    session.attributes['request'] = 'set_bus'
-
-    result = analyze_id(bus_id, 'bus')
-    if result:
-        session.attributes['current_param'] = 0
-        return result
-    result = analyze_id(stop_id, 'stop')
-    if result:
-        session.attributes['current_param'] = 1
-        return result
-    result = analyze_id(preset_id, 'preset')
+    result = analyze_id(stop, 'agency')
     if result:
         session.attributes['current_param'] = 2
         return result
 
-    set_bus_success_message = \
-        set_bus(session.attributes['bus'], session.attributes['stop'], session.attributes['preset'])
+    minute_string, stop_name = CheckIntent.check(session.attributes['route'], session.attributes['stop'], agency)
+
+    minutes_message = render_template('bus_minutes_message', claire='', route=route, stop=stop, minutes=minute_string,
+                                      stop_name=stop_name)
+
+    return generate_statement_card(minutes_message, 'Check Status')
+
+
+@ask.intent('SetIntent')
+def set_intent(route, stop, preset, agency):
+    session.attributes['request'] = 'set'
+
+    result = analyze_id(route, 'route')
+    if result:
+        session.attributes['current_param'] = 1
+        return result
+    result = analyze_id(stop, 'stop')
+    if result:
+        session.attributes['current_param'] = 2
+        return result
+    result = analyze_id(preset, 'preset')
+    if result:
+        session.attributes['current_param'] = 3
+        return result
+    result = analyze_id(preset, 'agency')
+    if result:
+        session.attributes['current_param'] = 4
+        return result
+
+    try:
+        SetIntent.add(context.System.user.userId, session.attributes['route'], session.attributes['stop'],
+                      session.attributes['preset'], agency)
+    except Exception:
+        return render_template('internal_error_message')
+
+    set_bus_success_message = render_template('set_bus_success_message', route=route, stop=stop, preset=preset)
+
     return generate_statement_card(set_bus_success_message, 'Set Bus Status')
 
 
-@ask.intent('GetBusIntent')
-def get_bus_intent(preset_id):
-    session.attributes['request'] = 'get_bus'
+@ask.intent('GetIntent')
+def get_intent(preset, agency):
+    session.attributes['request'] = 'get'
 
-    if not preset_id:
-        preset_id = '1'
+    if not preset:
+        preset = '1'
 
-    result = analyze_id(preset_id, 'preset')
-    if result:
-        session.attributes['current_param'] = 0
-        return result
+    param_check_fail = analyze_id(preset, 'preset')
+    if param_check_fail:
+        session.attributes['current_param'] = 1
+        return param_check_fail
+    param_check_fail = analyze_id(preset, 'agency')
+    if param_check_fail:
+        session.attributes['current_param'] = 2
+        return param_check_fail
 
-    get_bus_message = get_bus(session.attributes['preset'])
-    print(get_bus_message)
-    return generate_statement_card(get_bus_message, 'Get Bus Status')
+    minute_string, stop_name, route, stop = GetIntent.get(context.System.user.userId, session.attributes['preset'],
+                                                          agency)
+
+    if not minute_string:
+        return render_template('no_bus_message', bus_id=route, stop_id=stop, stop_name=stop_name)
+
+    minutes_message = render_template('bus_minutes_message', claire='', route=route, stop=stop, minutes=minute_string,
+                                      stop_name=stop_name)
+
+    return generate_statement_card(minutes_message, 'Get Bus Status')
 
 
 @ask.intent('AnswerIntent')
-def answer_intent(num):
+def answer_intent(num, agency):
     if check_iteration():
         return statement(render_template('try_again_message'))
 
-    if 'request' not in session.attributes:
-       return get_bus_intent('1')
+    # if 'request' not in session.attributes:
+    #    return GetIntent.get('1')
     current_param = session.attributes['current_param']
-    if session.attributes['request'] == 'check_bus':
-        return check_bus_intent(assign_params(current_param, 0, num), assign_params(current_param, 1, num))
-    elif session.attributes['request'] == 'set_bus':
-        return set_bus_intent(
+    if session.attributes['request'] == 'check':
+        return CheckIntent.check(
             assign_params(current_param, 0, num),
             assign_params(current_param, 1, num),
-            assign_params(current_param, 2, num))
-    elif session.attributes['request'] == 'get_bus':
-        return get_bus_intent(assign_params(current_param, 0, num))
+            assign_params(current_param, 2, agency))
+    elif session.attributes['request'] == 'set':
+        return SetIntent.add(
+            context.System.user.userId,
+            assign_params(current_param, 1, num),
+            assign_params(current_param, 2, num),
+            assign_params(current_param, 3, num),
+            assign_params(current_param, 4, agency))
+    elif session.attributes['request'] == 'get':
+        return GetIntent.get(
+            context.System.user.userId,
+            assign_params(current_param, 1, num),
+            assign_params(current_param, 2, agency))
     else:
-        return question(render_template('try_again_message')).reprompt(render_template('try_again_message'))
+        return question(render_template('try_again_message'))
 
 
-def assign_params(current_param, param_num, num):
-    return num if current_param == param_num else None
+def assign_params(current_param, param_num, value):
+    return value if current_param == param_num else None
 
 
-def analyze_id(num, num_type):
-    if num_type in session.attributes:
+def analyze_id(value, param):
+    if param in session.attributes:  # check if param already in session
         return None
-    if not num or not re.compile('\\d+').match(str(num)):
-        return question(render_template('%s-question' % num_type))\
-            .reprompt(render_template('%s-question-reprompt' % num_type))
-    else:
-        session.attributes[num_type] = num
-        return None
+    if not value:
+        return question(render_template('%s-question' % param))\
+            .reprompt(render_template('%s-question-reprompt' % param))
 
+    if param != 'agency' and not re.compile('\\d+').match(str(value)):
+        return question(render_template('%s-question' % param)) \
+            .reprompt(render_template('%s-question-reprompt' % param))
 
-def check_bus(bus_id, stop_id):
-    logger.info('Checking Bus %s at %s...' % (bus_id, stop_id))
-    minutes = CheckBusIntent.check_bus(bus_id, stop_id)
-    logging.info('Minutes received: %s' % minutes)
-    if len(minutes) == 0:
-        return render_template('no_bus_message', bus_id=bus_id, stop_id=stop_id,
-                               stop_name=StopNames.get_stop_name(stop_id))
-    minute_strings = []
-    for minute in minutes:
-        minute_strings.append('%s minutes away <break time="200ms"/>' % minute)
-    minute_string = ' and '.join(minute_strings)
+    if param == 'agency' and not re.compile('[a-z]+[-][a-z\\-]+').match(str(value)):
+        return question(render_template('%s-question' % param)) \
+            .reprompt(render_template('%s-question-reprompt' % param))
 
-    claire = ''
-    if context.System.user.userId == 'amzn1.ask.account.AG45VG6TQYHOLHETZSHBHS4SGKSM2AGOCDGJYUS4JZ6H76VXODFLP5Z' \
-                                     'F2FGHEPJJJ5DKWUPXZCJD2OIDSWXKEPP7SZAAP5U774DDBGEL7WJOKDDTUKFAGGEGQ6X7F44I' \
-                                     'X6PZMIAEKRJ2VQJHFYY5UFRWLSETZUMBBXB7W7YTAARPUSJTAMTK3KX2Q7VZYP7FF4YB2JYRU' \
-                                     'IYJIGI':
-        claire = 'My %s boo boo.' % (random.choice(adjectives))
-
-    response = render_template('bus_minutes_message', claire=claire, bus_id=bus_id, stop_id=stop_id,
-                               minutes=minute_string, stop_name=StopNames.get_stop_name(stop_id))
-
-    return response
-
-
-def set_bus(bus_id, stop_id, preset):
-    logger.info('Setting Bus %s at %s for preset %s...' % (bus_id, stop_id, preset))
-    try:
-        SetBusIntent.set_bus(context.System.user.userId, bus_id, stop_id, preset)
-    except Exception as e:
-        logger.error(e)
-        return render_template('internal_error_message')
-    logger.info('Set bus %s at %s was successful' % (bus_id, stop_id))
-    set_bus_success_message = render_template('set_bus_success_message', bus_id=bus_id, stop_id=stop_id, preset=preset,
-                                              stop_name=StopNames.get_stop_name(stop_id))
-    return set_bus_success_message
-
-
-def get_bus(preset):
-    logger.info('Getting Bus at preset %s...' % preset)
-    try:
-        bus_id, stop_id = GetBusIntent.get_bus(context.System.user.userId, preset)
-        logger.info('Bus retrieved was %s at %s' % (bus_id, stop_id))
-        if not bus_id or not stop_id:
-            return render_template('preset_not_found_message', preset=preset)
-        return check_bus(bus_id, stop_id)
-    except Exception as e:
-        logger.error(e)
-        return render_template('internal_error_message')
+    session.attributes[param] = value
+    return None
 
 
 def generate_statement_card(speech, title):

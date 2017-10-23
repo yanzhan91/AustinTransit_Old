@@ -26,9 +26,8 @@ help_card: |
 
 bus_minutes_message: |
   <speak>
-    {{claire}}
-    The next number {{bus_id}} bus at stop
-    <say-as interpret-as="digits">{{stop_id}}</say-as>
+    The next number {{route}} bus at stop
+    <say-as interpret-as="digits">{{stop}}</say-as>
     <break time="100ms"/>
     {{stop_name}}
     <break time="300ms"/>
@@ -37,18 +36,16 @@ bus_minutes_message: |
 
 no_bus_message: |
   <speak>
-    There are currently no number {{bus_id}} bus at stop
-    <say-as interpret-as="digits">{{stop_id}}</say-as>
+    There are currently no number {{route}} bus at stop
+    <say-as interpret-as="digits">{{stop}}</say-as>
     <break time="100ms"/>
     {{stop_name}}
   </speak>
 
 set_bus_success_message: |
   <speak>
-    Bus number {{bus_id}} at stop
-    <say-as interpret-as="digits">{{stop_id}}</say-as>
-    <break time="100ms"/>
-    {{stop_name}}
+    Route {{route}} at stop
+    <say-as interpret-as="digits">{{stop}}</say-as>
     is saved at preset {{preset}}.
   </speak>
 
@@ -58,9 +55,9 @@ internal_error_message: An internal error has occured. Please try again later.
 
 preset_not_found_message: Preset {{preset}} has not yet been saved.
 
-bus-question: For which bus?
+route-question: For which route?
 
-bus-question-reprompt: For a list of bus IDs, say help.
+route-question-reprompt: For a list of bus IDs, say help.
 
 stop-question: Which stop?
 
@@ -70,8 +67,6 @@ preset-question: Which preset?
 
 preset-question-reprompt: Which preset would you like?
 
-### Webhook ###
+agency-question: Which agency?
 
-missing_required_values: I did not hear the bus_id or stop_id. Please try again.
-
-
+agency-question-reprompt: For a list of agencies, say help.
