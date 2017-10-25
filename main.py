@@ -1,7 +1,9 @@
-import logging
 from flask import Flask, render_template
 from flask_ask import Ask, statement, question, context, session
 import re
+
+from requests import HTTPError
+
 import CheckIntent
 import SetIntent
 import GetIntent
@@ -9,7 +11,6 @@ import GetIntent
 
 app = Flask(__name__)
 ask = Ask(app, '/')
-logger = logging.getLogger()
 
 
 @ask.launch
@@ -33,6 +34,7 @@ def stop_intent():
 @ask.intent('CheckIntent')
 def check_intent(route, stop, agency):
     session.attributes['request'] = 'check'
+    session.attributes['agency'] = agency
 
     result = analyze_id(route, 'route')
     if result:
@@ -42,14 +44,11 @@ def check_intent(route, stop, agency):
     if result:
         session.attributes['current_param'] = 1
         return result
-    result = analyze_id(stop, 'agency')
-    if result:
-        session.attributes['current_param'] = 2
-        return result
 
-    minute_string, stop_name = CheckIntent.check(session.attributes['route'], session.attributes['stop'], agency)
+    minute_string, stop_name = CheckIntent.check(session.attributes['route'], session.attributes['stop'],
+                                                 'austin-%s' % agency)
 
-    minutes_message = render_template('bus_minutes_message', claire='', route=route, stop=stop, minutes=minute_string,
+    minutes_message = render_template('bus_minutes_message', route=route, stop=stop, minutes=minute_string,
                                       stop_name=stop_name)
 
     return generate_statement_card(minutes_message, 'Check Status')
@@ -58,6 +57,7 @@ def check_intent(route, stop, agency):
 @ask.intent('SetIntent')
 def set_intent(route, stop, preset, agency):
     session.attributes['request'] = 'set'
+    session.attributes['agency'] = agency
 
     result = analyze_id(route, 'route')
     if result:
@@ -71,18 +71,15 @@ def set_intent(route, stop, preset, agency):
     if result:
         session.attributes['current_param'] = 3
         return result
-    result = analyze_id(preset, 'agency')
-    if result:
-        session.attributes['current_param'] = 4
-        return result
 
     try:
         SetIntent.add(context.System.user.userId, session.attributes['route'], session.attributes['stop'],
-                      session.attributes['preset'], agency)
-    except Exception:
-        return render_template('internal_error_message')
+                      session.attributes['preset'], 'austin-%s' % agency)
+    except HTTPError:
+        return statement(render_template('internal_error_message'))
 
-    set_bus_success_message = render_template('set_bus_success_message', route=route, stop=stop, preset=preset)
+    set_bus_success_message = render_template('set_bus_success_message',
+                                              route=route, stop=stop, preset=preset, agency=agency)
 
     return generate_statement_card(set_bus_success_message, 'Set Bus Status')
 
@@ -90,6 +87,7 @@ def set_intent(route, stop, preset, agency):
 @ask.intent('GetIntent')
 def get_intent(preset, agency):
     session.attributes['request'] = 'get'
+    session.attributes['agency'] = agency
 
     if not preset:
         preset = '1'
@@ -98,16 +96,19 @@ def get_intent(preset, agency):
     if param_check_fail:
         session.attributes['current_param'] = 1
         return param_check_fail
-    param_check_fail = analyze_id(preset, 'agency')
-    if param_check_fail:
-        session.attributes['current_param'] = 2
-        return param_check_fail
 
-    minute_string, stop_name, route, stop = GetIntent.get(context.System.user.userId, session.attributes['preset'],
-                                                          agency)
+    try:
+        minute_string, stop_name, route, stop = GetIntent.get(context.System.user.userId, session.attributes['preset'],
+                                                              'austin-%s' % agency)
+    except HTTPError as e:
+        if e.response.json()['error_code'] == 10302:
+            return statement(render_template('preset_not_found_message', preset=preset, agency=agency))
+        else:
+            return statement(render_template('internal_error_message'))
 
     if not minute_string:
-        return render_template('no_bus_message', bus_id=route, stop_id=stop, stop_name=stop_name)
+        return generate_statement_card(
+            render_template('no_bus_message', bus_id=route, stop_id=stop, stop_name=stop_name), 'Get Intent')
 
     minutes_message = render_template('bus_minutes_message', claire='', route=route, stop=stop, minutes=minute_string,
                                       stop_name=stop_name)
@@ -116,30 +117,30 @@ def get_intent(preset, agency):
 
 
 @ask.intent('AnswerIntent')
-def answer_intent(num, agency):
+def answer_intent(num):
     if check_iteration():
         return statement(render_template('try_again_message'))
 
-    # if 'request' not in session.attributes:
-    #    return GetIntent.get('1')
+    agency = session.attributes['agency']
+
     current_param = session.attributes['current_param']
     if session.attributes['request'] == 'check':
         return CheckIntent.check(
             assign_params(current_param, 0, num),
             assign_params(current_param, 1, num),
-            assign_params(current_param, 2, agency))
+            agency)
     elif session.attributes['request'] == 'set':
         return SetIntent.add(
             context.System.user.userId,
             assign_params(current_param, 1, num),
             assign_params(current_param, 2, num),
             assign_params(current_param, 3, num),
-            assign_params(current_param, 4, agency))
+            agency)
     elif session.attributes['request'] == 'get':
         return GetIntent.get(
             context.System.user.userId,
             assign_params(current_param, 1, num),
-            assign_params(current_param, 2, agency))
+            agency)
     else:
         return question(render_template('try_again_message'))
 
@@ -155,11 +156,7 @@ def analyze_id(value, param):
         return question(render_template('%s-question' % param))\
             .reprompt(render_template('%s-question-reprompt' % param))
 
-    if param != 'agency' and not re.compile('\\d+').match(str(value)):
-        return question(render_template('%s-question' % param)) \
-            .reprompt(render_template('%s-question-reprompt' % param))
-
-    if param == 'agency' and not re.compile('[a-z]+[-][a-z\\-]+').match(str(value)):
+    if not re.compile('\\d+').match(str(value)):
         return question(render_template('%s-question' % param)) \
             .reprompt(render_template('%s-question-reprompt' % param))
 

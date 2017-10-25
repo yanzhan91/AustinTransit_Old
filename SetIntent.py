@@ -2,11 +2,11 @@ import requests
 
 
 def add(user, route, stop, preset, agency):
+    agency = agency.replace(' ', '-')
+
     response = __get_response(user, route, stop, preset, agency)
-    if response['status'] != 200:
-        raise Exception
-        # return render_template('internal_error_message')
-    # return render_template('set_bus_success_message', route=route, stop=stop, preset=preset)
+    if response.status_code != 200:
+        response.raise_for_status()
 
 
 def __get_response(user, route, stop, preset, agency):
@@ -18,7 +18,7 @@ def __get_response(user, route, stop, preset, agency):
         'agency': agency
     }
     response = requests.post('https://0izohjr8ng.execute-api.us-east-2.amazonaws.com/dev/add', data=parameters)
-    return response.json()
+    return response
 
 
 if __name__ == '__main__':

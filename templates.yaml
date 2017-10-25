@@ -26,7 +26,7 @@ help_card: |
 
 bus_minutes_message: |
   <speak>
-    The next number {{route}} bus at stop
+    The next route {{route}} at stop
     <say-as interpret-as="digits">{{stop}}</say-as>
     <break time="100ms"/>
     {{stop_name}}
@@ -36,7 +36,7 @@ bus_minutes_message: |
 
 no_bus_message: |
   <speak>
-    There are currently no number {{route}} bus at stop
+    There are currently no route {{route}} at stop
     <say-as interpret-as="digits">{{stop}}</say-as>
     <break time="100ms"/>
     {{stop_name}}
@@ -46,14 +46,14 @@ set_bus_success_message: |
   <speak>
     Route {{route}} at stop
     <say-as interpret-as="digits">{{stop}}</say-as>
-    is saved at preset {{preset}}.
+    is saved at preset {{preset}} for {{agency}}.
   </speak>
 
 try_again_message: I didn't get that. Please say that again.
 
 internal_error_message: An internal error has occured. Please try again later.
 
-preset_not_found_message: Preset {{preset}} has not yet been saved.
+preset_not_found_message: Preset {{preset}} has not yet been saved for {{agency}}.
 
 route-question: For which route?
 

@@ -3,6 +3,8 @@ from flask import render_template
 
 
 def check(route, stop, agency):
+    agency = agency.replace(' ', '-')
+
     minutes, stop_name = __get_response(route, stop, agency)
 
     if len(minutes) == 0:
@@ -22,10 +24,10 @@ def __get_response(route, stop, agency):
         'agency': agency
     }
     response = requests.get('https://0izohjr8ng.execute-api.us-east-2.amazonaws.com/dev/check', params=parameters)
-    data = response.json()
-    if data['status'] != 200 or 'message' not in data:
-        # Throw error
+    if response.status_code != 200:
+        response.raise_for_status()
         pass
+    data = response.json()
     data = data['message']
     return data['minutes'], data['stop_name']
 

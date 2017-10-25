@@ -3,41 +3,53 @@
     {
       "slots": [
         {
-          "name": "bus_id",
+          "name": "route",
           "type": "AMAZON.NUMBER"
         },
         {
-          "name": "stop_id",
+          "name": "stop",
           "type": "AMAZON.NUMBER"
+        },
+        {
+          "name": "agency",
+          "type": "Agency"
         }
       ],
-      "intent": "CheckBusIntent"
+      "intent": "CheckIntent"
     },
     {
       "slots": [
         {
-          "name": "bus_id",
+          "name": "route",
           "type": "AMAZON.NUMBER"
         },
         {
-          "name": "stop_id",
+          "name": "stop",
           "type": "AMAZON.NUMBER"
         },
         {
-          "name": "preset_id",
+          "name": "preset",
           "type": "AMAZON.NUMBER"
+        },
+        {
+          "name": "agency",
+          "type": "Agency"
         }
       ],
-      "intent": "SetBusIntent"
+      "intent": "SetIntent"
     },
     {
       "slots": [
         {
-          "name": "preset_id",
+          "name": "preset",
           "type": "AMAZON.NUMBER"
+        },
+        {
+          "name": "agency",
+          "type": "Agency"
         }
       ],
-      "intent": "GetBusIntent"
+      "intent": "GetIntent"
     },
     {
       "slots": [
