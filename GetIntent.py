@@ -1,21 +1,34 @@
-import requests
-import logging as log
 from flask import render_template
-
-from requests import HTTPError
+import logging as log
+import requests
+import os
 
 
 def get(user, preset, agency):
-    try:
-        minutes, stop_name, route, stop = __get_response(user, preset, agency)
-    except HTTPError as e:
-        if e.response.json()['error_code'] == 10302:
+    log.info('User=%s, Preset=%s, Agency=%s', user, preset, agency)
+    response = __get_response(user, preset, agency)
+    if response.status_code != 200:
+        if response.json()['error_code'] == 10302:
+            log.info(response.text)
             return render_template('preset_not_found_message', preset=preset, agency=agency)
         else:
+            log.error(response.text)
             return render_template('internal_error_message')
 
+    data = response.json()
+    try:
+        minutes = data['message']['minutes']
+        stop_name = data['message']['stop_name']
+        route = data['message']['route']
+        stop = data['message']['stop']
+    except KeyError:
+        log.exception(response.text)
+        return render_template('internal_error_message')
+
+    log.info('Transit api response: minutes=%s, stop_name=%s, route=%s, stop=%s', minutes, stop_name, route, stop)
+
     if len(minutes) == 0:
-        return render_template('no_route_message', bus_id=route, stop_id=stop, stop_name=stop_name)
+        return render_template('no_route_message', route=route, stop=stop, stop_name=stop_name)
 
     minute_strings = []
     for minute in minutes:
@@ -32,12 +45,7 @@ def __get_response(user, preset, agency):
         'preset': preset,
         'agency': agency
     }
-    response = requests.get('https://0izohjr8ng.execute-api.us-east-2.amazonaws.com/dev/get', params=parameters)
-    if response.status_code != 200:
-        response.raise_for_status()
-    data = response.json()
-    data = data['message']
-    return data['minutes'], data['stop_name'], data['route'], data['stop']
+    return requests.get('%s/get' % os.environ['transit_api_url'], params=parameters)
 
 
 if __name__ == '__main__':

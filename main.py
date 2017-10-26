@@ -1,7 +1,9 @@
 from flask import Flask, render_template
 from flask_ask import Ask, statement, question, context, request
+
 import re
 import json
+import os
 
 import CheckIntent
 import SetIntent
@@ -33,28 +35,34 @@ def stop_intent():
 
 @ask.intent('CheckIntent')
 def check_intent(route, stop, agency):
-    log.info(request)
+    log.info('Request object = %s' % request)
     if request['dialogState'] != 'COMPLETED':
         return delegate_dialog()
-    message = CheckIntent.check(route, stop, 'austin-%s' % agency.replace(' ', '-'))
+    message = CheckIntent.check(route, stop, '%s-%s' % (os.environ['city'], agency.replace(' ', '-')))
+    log.info('Response message = %s', message)
     return generate_statement_card(message, 'Check Status')
 
 
 @ask.intent('SetIntent')
 def set_intent(route, stop, preset, agency):
-    log.info(request)
+    log.info('Request object = %s' % request)
     if request['dialogState'] != 'COMPLETED':
         return delegate_dialog()
-    message = SetIntent.add(context.System.user.userId, route, stop, preset, 'austin-%s' % agency.replace(' ', '-'))
+    message = SetIntent.add(context.System.user.userId, route, stop, preset,
+                            '%s-%s' % (os.environ['city'], agency.replace(' ', '-')))
+    log.info('Response message = %s', message)
     return generate_statement_card(message, 'Set Status')
 
 
 @ask.intent('GetIntent')
 def get_intent(preset, agency):
-    log.info(request)
+    log.info('Request object = %s' % request)
     if request['dialogState'] != 'COMPLETED':
         return delegate_dialog()
-    message = GetIntent.get(context.System.user.userId, preset, 'austin-%s' % agency.replace(' ', '-'))
+
+    message = GetIntent.get(context.System.user.userId, preset,
+                            '%s-%s' % (os.environ['city'], agency.replace(' ', '-')))
+    log.info('Response message = %s', message)
     return generate_statement_card(message, 'Get Status')
 
 
@@ -72,4 +80,10 @@ def delegate_dialog():
 
 if __name__ == '__main__':
     app.config['ASK_VERIFY_REQUESTS'] = False
+
+    json_data = open('zappa_settings.json')
+    env_vars = json.load(json_data)['test']['environment_variables']
+    for key, val in env_vars.items():
+        os.environ[key] = val
+
     app.run()
