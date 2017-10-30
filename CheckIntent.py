@@ -29,6 +29,10 @@ def check(route, stop, agency):
         minute_strings.append('%s minutes away <break time="200ms"/>' % minute)
     minute_string = ' and '.join(minute_strings)
 
+    # Remove stop id if stop name exists
+    if stop_name:
+        stop = ''
+
     return render_template('check_success_message', route=route, stop=stop, minutes=minute_string, stop_name=stop_name)
 
 
