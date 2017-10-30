@@ -26,11 +26,10 @@ help_card: |
 
 check_success_message: |
   <speak>
-    The next route {{route}} at stop
+    The next route {{route}} at
     <say-as interpret-as="digits">{{stop}}</say-as>
-    <break time="100ms"/>
     {{stop_name}}
-    <break time="300ms"/>
+    <break time="250ms"/>
     is {{minutes}}.
   </speak>
 
